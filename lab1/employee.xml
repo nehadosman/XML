@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="style.css"?>
+<Employees>
+    <employee>
+        <name>first employee</name>
+        <phones>
+            <phone type="work">11111</phone>
+            <phone type="mobile">11111</phone>
+        </phones>
+        <addresses>
+            <address>
+                <street>main street</street>
+                <buidingNumber>100-000</buidingNumber>
+                <Region>Smouhaa</Region>
+                <City>Alexandria</City>
+            </address>
+        </addresses>
+        <email>examble@examble.com</email>
+    </employee>
+        <employee>
+        <name>second employee</name>
+        <phones>
+            <phone type="work">11111</phone>
+            <phone type="mobile">11111</phone>
+        </phones>
+        <addresses>
+            <address>
+                <street>main street</street>
+                <buidingNumber>100-000</buidingNumber>
+                <Region>Abd El-naser</Region>
+                <City>Alexandria</City>
+            </address>
+        </addresses>
+        <email>examble@examble.com</email>
+    </employee>
+</Employees>
