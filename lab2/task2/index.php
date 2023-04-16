@@ -1,30 +1,26 @@
 <?php
 session_start();
-$dom = new DOMDocument();
+$dom = new DOMDocument('1.0');
 $filename = 'employees.xml';
 $xmlDocument = file_get_contents($filename);
 $dom->preserveWhiteSpace = false;
+$dom->formatOutput = true;
 $dom->loadXML($xmlDocument);
 
-if (isset($_GET['action'])) {
-  if ($_GET['action'] == "next") {
+if ($_GET["action"] === "next" && intval($_SESSION["index"]) + 1 < $dom->documentElement->childNodes->length) {
 
-    $_SESSION["index"] += 1;
-  }
-  if (isset($_SESSION["index"])) {
-    if ($_GET["action"] == "prev" && $_SESSION["index"] > 0) {
-
-      $_SESSION["index"] -= 1;
-    }
-  }
-  if ($_GET["action"] === "insert") {
-    $employees = $dom->documentElement;
-  }
+  $_SESSION["index"] += 1;
 }
 
+if ($_GET["action"] === "prev" && $_SESSION["index"] > 0) {
+
+  $_SESSION["index"] -= 1;
+}
 
 $index = $_SESSION["index"] ?? 0;
+
 $employees = $dom->documentElement;
+
 $employee = $employees->childNodes[$index];
 
 $name = $employee->childNodes[0]->nodeValue;
@@ -34,13 +30,127 @@ $phone = $phones->childNodes[0]->nodeValue;
 
 $addresses = $employee->childNodes[2];
 $address = $addresses->childNodes[0];
+
 $street = $address->childNodes[0]->nodeValue;
 $buildingNumber = $address->childNodes[1]->nodeValue;
 $region = $address->childNodes[2]->nodeValue;
 $city = $address->childNodes[3]->nodeValue;
-
+$address = "$street - $buildingNumber - $region - $city";
 $email = $employee->childNodes[3]->nodeValue;
-// var_dump($index);
+
+if ($_GET["action"] === "insert") {
+
+  $_SESSION["index"] += 1;
+  $employees = $dom->documentElement;
+
+  $newEmployee = $dom->createElement("employee");
+
+
+  $name = $dom->createElement("name", $_GET["name"]);
+  $newEmployee->appendChild($name);
+
+
+  $phones = $dom->createElement("phones");
+  $phone = $dom->createElement("phone", $_GET["phone"]);
+  $phones->appendChild($phone);
+
+  $newEmployee->appendChild($phones);
+
+
+  $addresses = $dom->createElement("addresses");
+
+
+  $addressArray = explode(" - ", $_GET["address"]);
+
+  $address = $dom->createElement("address");
+  $street = $dom->createElement("street", $addressArray[0]);
+  $buildingNumber = $dom->createElement("buildingNumber", $addressArray[1]);
+  $region = $dom->createElement("region", $addressArray[2]);
+  $city = $dom->createElement("city", $addressArray[3]);
+
+  $address->appendChild($street);
+  $address->appendChild($buildingNumber);
+  $address->appendChild($region);
+  $address->appendChild($city);
+
+  $addresses->appendChild($address);
+
+  $newEmployee->appendChild($addresses);
+
+
+
+  $email = $dom->createElement("email", $_GET["email"]);
+  $newEmployee->appendChild($email);
+
+  $employees->appendChild($newEmployee);
+
+  // $dom->appendChild($newEmployee);
+
+
+  echo $dom->saveXML();
+
+  file_put_contents($filename, $dom->saveXML());
+
+  header("location: /");
+}
+
+
+if ($_GET["action"] === "delete") {
+
+  $removedChild = $dom->documentElement->childNodes[$_SESSION["index"]];
+
+  $dom->documentElement->removeChild($removedChild);
+
+  // var_dump($removeChild);
+
+  file_put_contents($filename, $dom->saveXML());
+  header("location: /");
+
+  $_SESSION["index"] -= 1;
+
+  // $dom->documentElement->removeChild()
+}
+
+if ($_GET["action"] === "update") {
+
+  $index = $_SESSION["index"] or die("no element selected");
+
+  $employees = $dom->documentElement;
+
+  $employee = $employees->childNodes[$index];
+
+  $name = $employee->childNodes[0]->nodeValue = $_GET["name"];
+
+
+  $phones = $employee->childNodes[1];
+
+  $phone = $phones->childNodes[0]->nodeValue = $_GET["phone"];
+
+
+
+
+  $addresses = $employee->childNodes[2];
+
+  $address = $addresses->childNodes[0];
+
+  $addressArray = explode(" - ", $_GET["address"]);
+
+
+  $street = $address->childNodes[0]->nodeValue = $addressArray[0];
+  $buildingNumber = $address->childNodes[1]->nodeValue = $addressArray[1];
+  $region = $address->childNodes[2]->nodeValue = $addressArray[2];
+  $city = $address->childNodes[3]->nodeValue = $addressArray[3];
+
+  $email = $employee->childNodes[3]->nodeValue = $_GET["email"];
+
+
+  file_put_contents($filename, $dom->saveXML());
+  header("location: /");
+}
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -57,7 +167,7 @@ $email = $employee->childNodes[3]->nodeValue;
 
 <body>
 
-  <div class="container">
+  <div class="container mt-5">
     <form action="index.php">
 
       <div class="mb-3">
@@ -72,7 +182,7 @@ $email = $employee->childNodes[3]->nodeValue;
 
       <div class="mb-3">
         <label for="address" class="form-label">address</label>
-        <input type="text" class="form-control" name="address" id="address" value="<?php echo "$street-$buildingNumber-$region-$city" ?>">
+        <input type="text" class="form-control" name="address" id="address" value="<?php echo "$address" ?>">
       </div>
 
       <div class="mb-3">
@@ -87,7 +197,6 @@ $email = $employee->childNodes[3]->nodeValue;
         <input type="submit" class="btn btn-primary" name="action" value="insert">
         <input type="submit" class="btn btn-primary" name="action" value="update">
         <input type="submit" class="btn btn-primary" name="action" value="delete">
-        <input type="submit" class="btn btn-primary" name="action" value="save">
       </div>
 
 
